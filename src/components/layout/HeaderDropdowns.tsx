@@ -125,7 +125,7 @@ function NotificationDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
+      className="absolute right-0 top-full mt-2 w-[calc(100vw-1rem)] max-w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
     >
       <div className="flex items-center justify-between border-b border-[var(--border)] p-4">
         <h3 className="font-semibold text-[var(--foreground)]">
@@ -212,7 +212,7 @@ function MessagesDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
+      className="absolute right-0 top-full mt-2 w-[calc(100vw-1rem)] max-w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
     >
       <div className="flex items-center justify-between border-b border-[var(--border)] p-4">
         <h3 className="font-semibold text-[var(--foreground)]">Messages</h3>
@@ -274,7 +274,7 @@ function ProfileDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
+      className="absolute right-0 top-full mt-2 w-[calc(100vw-1rem)] max-w-64 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
     >
       <div className="p-4 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
@@ -377,7 +377,7 @@ export default function HeaderDropdowns({
       : "bg-[var(--secondary)] text-[var(--foreground)]";
 
   return (
-    <div className="flex items-center gap-1" suppressHydrationWarning>
+    <div className="flex items-center gap-0.5 sm:gap-1" suppressHydrationWarning>
       <div className="relative" suppressHydrationWarning>
         <button
           onClick={toggleNotifications}
@@ -433,14 +433,14 @@ export default function HeaderDropdowns({
         </button>
       )}
       <div
-        className="ml-2 h-8 w-px bg-[var(--border)]"
+        className="ml-1 hidden h-8 w-px bg-[var(--border)] sm:block"
         suppressHydrationWarning
       />
       <div className="relative" suppressHydrationWarning>
         <button
           onClick={toggleProfile}
           className={cn(
-            "ml-2 flex items-center gap-2 rounded-xl p-1.5 hover:bg-[var(--secondary)] transition-all duration-200",
+            "ml-1 flex items-center gap-2 rounded-xl p-1.5 hover:bg-[var(--secondary)] transition-all duration-200 sm:ml-2",
             profileOpen && "bg-[var(--secondary)]"
           )}
         >

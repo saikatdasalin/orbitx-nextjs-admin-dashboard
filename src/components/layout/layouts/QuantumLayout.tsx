@@ -19,6 +19,7 @@ import {
   Package,
   CheckCircle,
   Clock,
+  Menu,
   X,
   Sun,
   Moon,
@@ -131,7 +132,7 @@ function NotificationDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
+      className="absolute right-0 top-full mt-2 w-[calc(100vw-1rem)] max-w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
     >
       <div className="flex items-center justify-between border-b border-[var(--border)] p-4">
         <h3 className="font-semibold text-[var(--foreground)]">
@@ -218,7 +219,7 @@ function MessagesDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
+      className="absolute right-0 top-full mt-2 w-[calc(100vw-1rem)] max-w-80 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
     >
       <div className="flex items-center justify-between border-b border-[var(--border)] p-4">
         <h3 className="font-semibold text-[var(--foreground)]">Messages</h3>
@@ -280,7 +281,7 @@ function ProfileDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
+      className="absolute right-0 top-full mt-2 w-[calc(100vw-1rem)] max-w-64 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl animate-fade-in z-50"
     >
       <div className="p-4 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
@@ -333,10 +334,19 @@ function ProfileDropdown({
   );
 }
 
-function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+function NavLink({
+  item,
+  isActive,
+  onClick,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  onClick?: () => void;
+}) {
   return (
     <Link
       href={item.href}
+      onClick={onClick}
       className={cn(
         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
         isActive
@@ -362,7 +372,13 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   );
 }
 
-function CollapsibleNavItem({ item }: { item: NavItem }) {
+function CollapsibleNavItem({
+  item,
+  onItemClick,
+}: {
+  item: NavItem;
+  onItemClick?: () => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -391,6 +407,7 @@ function CollapsibleNavItem({ item }: { item: NavItem }) {
               key={`${item.name}-${child.href}-${index}`}
               item={child}
               isActive={pathname === child.href}
+              onClick={onItemClick}
             />
           ))}
         </div>
@@ -409,6 +426,11 @@ export default function QuantumLayout({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   const toggleTheme = () => {
     setTheme(settings.theme === "light" ? "dark" : "light");
@@ -440,8 +462,25 @@ export default function QuantumLayout({
       className="min-h-screen bg-[var(--background)]"
       suppressHydrationWarning
     >
+      <button
+        type="button"
+        aria-label="Close sidebar"
+        onClick={() => setSidebarOpen(false)}
+        className={cn(
+          "fixed inset-0 z-[35] bg-black/40 transition-opacity lg:hidden",
+          sidebarOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        )}
+      />
+
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-[280px] sidebar-premium">
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-40 h-screen w-[280px] sidebar-premium transform transition-transform duration-300 lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         <div
           className="flex h-16 items-center gap-3 px-6"
           suppressHydrationWarning
@@ -474,12 +513,14 @@ export default function QuantumLayout({
                       <CollapsibleNavItem
                         key={`${section.title}-${item.name}-${index}`}
                         item={item}
+                        onItemClick={() => setSidebarOpen(false)}
                       />
                     ) : (
                       <NavLink
                         key={`${section.title}-${item.href}-${index}`}
                         item={item}
                         isActive={pathname === item.href}
+                        onClick={() => setSidebarOpen(false)}
                       />
                     )
                   )}
@@ -491,21 +532,33 @@ export default function QuantumLayout({
       </aside>
 
       {/* Main content */}
-      <div className="ml-[280px]" suppressHydrationWarning>
+      <div className="ml-0 lg:ml-[280px]" suppressHydrationWarning>
         {/* Header */}
         <header
-          className="sticky top-0 z-30 flex h-16 items-center justify-between header-premium px-6"
+          className="sticky top-0 z-30 flex h-16 items-center justify-between header-premium px-3 sm:px-4 lg:px-6"
           suppressHydrationWarning
         >
-          <button className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-4 py-2.5 text-sm text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:border-[var(--ring)] transition-all duration-200 group">
-            <Search className="h-4 w-4 group-hover:text-[var(--primary)] transition-colors" />
-            <span>Search anything...</span>
-            <kbd className="ml-6 rounded-lg bg-[var(--muted)] px-2.5 py-1 text-xs font-medium">
-              ⌘K
-            </kbd>
-          </button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-xl p-2 text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-all duration-200 lg:hidden"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <button className="rounded-xl p-2 text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--foreground)] transition-all duration-200 sm:hidden">
+              <Search className="h-5 w-5" />
+            </button>
+            <button className="hidden items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:border-[var(--ring)] transition-all duration-200 group sm:flex lg:px-4 lg:py-2.5">
+              <Search className="h-4 w-4 group-hover:text-[var(--primary)] transition-colors" />
+              <span>Search anything...</span>
+              <kbd className="ml-4 hidden rounded-lg bg-[var(--muted)] px-2 py-1 text-xs font-medium lg:inline-flex">
+                Ctrl+K
+              </kbd>
+            </button>
+          </div>
 
-          <div className="flex items-center gap-1" suppressHydrationWarning>
+          <div className="flex items-center gap-0.5 sm:gap-1" suppressHydrationWarning>
             <div className="relative" suppressHydrationWarning>
               <button
                 onClick={toggleNotifications}
@@ -568,14 +621,14 @@ export default function QuantumLayout({
               <Settings className="h-5 w-5" suppressHydrationWarning />
             </button>
             <div
-              className="ml-3 h-8 w-px bg-[var(--border)]"
+              className="ml-1 hidden h-8 w-px bg-[var(--border)] sm:block"
               suppressHydrationWarning
             />
             <div className="relative" suppressHydrationWarning>
               <button
                 onClick={toggleProfile}
                 className={cn(
-                  "ml-3 flex items-center gap-3 rounded-xl p-1.5 hover:bg-[var(--secondary)] transition-all duration-200",
+                  "ml-1 flex items-center gap-3 rounded-xl p-1.5 hover:bg-[var(--secondary)] transition-all duration-200 sm:ml-3",
                   profileOpen && "bg-[var(--secondary)]"
                 )}
                 suppressHydrationWarning
@@ -604,8 +657,9 @@ export default function QuantumLayout({
           </div>
         </header>
 
-        <main className="p-8">{children}</main>
+        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
 }
+

@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Search, ChevronDown, ChevronRight, X, HelpCircle } from "lucide-react";
-import { useState } from "react";
+import { Search, ChevronDown, ChevronRight, X, HelpCircle, Menu } from "lucide-react";
+import { useState, useEffect } from "react";
 import { navigationItems, NavItem } from "../navigation-data";
 import HeaderDropdowns from "../HeaderDropdowns";
 
@@ -21,16 +21,18 @@ const carbonNavSections = [
   { name: "Authentication", items: navigationItems[7]?.items || [] },
 ];
 
-function CollapsibleSection({ 
-  name, 
-  items, 
-  isOpen, 
-  onToggle 
-}: { 
-  name: string; 
-  items: NavItem[]; 
+function CollapsibleSection({
+  name,
+  items,
+  isOpen,
+  onToggle,
+  onItemClick,
+}: {
+  name: string;
+  items: NavItem[];
   isOpen: boolean;
   onToggle: () => void;
+  onItemClick?: () => void;
 }) {
   const pathname = usePathname();
 
@@ -60,6 +62,7 @@ function CollapsibleSection({
             <Link
               key={`${item.name}-${index}`}
               href={item.href}
+              onClick={onItemClick}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 pathname === item.href
@@ -70,7 +73,7 @@ function CollapsibleSection({
               <item.icon className="h-4 w-4" />
               <span>{item.name}</span>
               {item.badge && (
-                <span className="ml-auto rounded-full bg-green-100 dark:bg-green-900 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-300">
+                <span className="ml-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300">
                   {item.badge}
                 </span>
               )}
@@ -83,8 +86,14 @@ function CollapsibleSection({
 }
 
 export default function CarbonLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [openSections, setOpenSections] = useState<string[]>(["Dashboard"]);
   const [showSupport, setShowSupport] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   const toggleSection = (name: string) => {
     setOpenSections((prev) =>
@@ -93,9 +102,29 @@ export default function CarbonLayout({ children }: { children: React.ReactNode }
   };
 
   return (
-    <div className="min-h-screen bg-secondary dark:bg-gray-900" suppressHydrationWarning>
+    <div
+      className="min-h-screen bg-secondary dark:bg-gray-900"
+      suppressHydrationWarning
+    >
+      <button
+        type="button"
+        aria-label="Close sidebar"
+        onClick={() => setSidebarOpen(false)}
+        className={cn(
+          "fixed inset-0 z-[35] bg-black/40 transition-opacity lg:hidden",
+          sidebarOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        )}
+      />
+
       {/* Sidebar with workspace selector */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-card flex flex-col">
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-card transform transition-transform duration-300 lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         {/* Logo */}
         <div className="flex h-14 items-center gap-2 px-4">
           <Link href="/" className="flex items-center gap-2">
@@ -107,7 +136,7 @@ export default function CarbonLayout({ children }: { children: React.ReactNode }
         {/* Workspace Selector */}
         <div className="border-b border-border p-4">
           <button className="flex w-full items-center gap-3 rounded-lg border border-border bg-secondary px-3 py-2 text-sm hover:bg-accent">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
               <span className="text-xs font-bold text-white">RQ</span>
             </div>
             <div className="flex-1 text-left">
@@ -135,6 +164,7 @@ export default function CarbonLayout({ children }: { children: React.ReactNode }
                 items={section.items}
                 isOpen={openSections.includes(section.name)}
                 onToggle={() => toggleSection(section.name)}
+                onItemClick={() => setSidebarOpen(false)}
               />
             ))}
           </nav>
@@ -143,24 +173,24 @@ export default function CarbonLayout({ children }: { children: React.ReactNode }
         {/* Support Section */}
         {showSupport && (
           <div className="border-t border-border p-4">
-            <div className="rounded-lg bg-secondary p-4 relative">
+            <div className="relative rounded-lg bg-secondary p-4">
               <button
                 onClick={() => setShowSupport(false)}
-                className="absolute right-2 top-2 p-1 rounded hover:bg-muted"
+                className="absolute right-2 top-2 rounded p-1 hover:bg-muted"
               >
                 <X className="h-3 w-3 text-muted-foreground" />
               </button>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="mb-2 flex items-center gap-2">
                 <HelpCircle className="h-5 w-5 text-blue-500" />
-                <h6 className="font-medium text-foreground dark:text-white text-sm">Need Support?</h6>
+                <h6 className="text-sm font-medium text-foreground dark:text-white">Need Support?</h6>
               </div>
-              <p className="text-xs text-muted-foreground dark:text-muted-foreground mb-3">
+              <p className="mb-3 text-xs text-muted-foreground dark:text-muted-foreground">
                 Contact with one of our experts to get support.
               </p>
               <button className="flex w-full items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-sm hover:bg-accent">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500" />
                 <div className="flex-1 text-left">
-                  <div className="font-medium text-foreground dark:text-white text-sm">Elsie Burnett</div>
+                  <div className="text-sm font-medium text-foreground dark:text-white">Elsie Burnett</div>
                   <div className="text-xs text-muted-foreground dark:text-muted-foreground">Chief Officer</div>
                 </div>
               </button>
@@ -170,20 +200,35 @@ export default function CarbonLayout({ children }: { children: React.ReactNode }
       </aside>
 
       {/* Main content */}
-      <div className="ml-64">
+      <div className="ml-0 lg:ml-64">
         {/* Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-card px-6">
-          <button className="flex items-center gap-2 rounded-lg border border-border bg-secondary px-4 py-2 text-sm text-muted-foreground dark:text-muted-foreground hover:bg-accent">
-            <Search className="h-4 w-4" />
-            <span>Search your page...</span>
-            <kbd className="ml-8 rounded bg-muted dark:bg-gray-600 px-2 py-0.5 text-xs">⌘K</kbd>
-          </button>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-card px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-accent lg:hidden"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <button className="rounded-lg p-2 text-muted-foreground hover:bg-accent sm:hidden">
+              <Search className="h-5 w-5" />
+            </button>
+            <button className="hidden items-center gap-2 rounded-lg border border-border bg-secondary px-4 py-2 text-sm text-muted-foreground dark:text-muted-foreground hover:bg-accent sm:flex">
+              <Search className="h-4 w-4" />
+              <span>Search your page...</span>
+              <kbd className="ml-4 hidden rounded bg-muted px-2 py-0.5 text-xs dark:bg-gray-600 lg:inline-flex">
+                Ctrl+K
+              </kbd>
+            </button>
+          </div>
 
           <HeaderDropdowns variant="compact" />
         </header>
 
-        <main className="p-6">{children}</main>
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );
 }
+
